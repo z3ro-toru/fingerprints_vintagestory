@@ -1,0 +1,11 @@
+{
+	ingredientPattern: "Q,M,S",
+	ingredients: {
+		"Q": { type: "item", code: "game:clearquartz" },
+		"M": { type: "item", code: "game:nugget-nativecopper" },
+		"S": { type: "item", code: "game:stick" }
+	},
+	width: 1,
+	height: 3,
+	output: { type: "item", code: "fingerprints:magnifyingglass" }
+}

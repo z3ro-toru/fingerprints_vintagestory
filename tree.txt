@@ -1,0 +1,224 @@
+‘âàãªâãà  ¯ ¯®ª â®¬  DATA
+‘¥à¨©­ë© ­®¬¥à â®¬ : 5247-E2C4
+E:.
+³   .gitignore
+³   build.ps1
+³   build.sh
+³   fingerprints_vintagestory.sln
+³   fingerprints_vintagestory.slnx
+³   tree.txt
+³   
+ÃÄÄÄ.vscode
+³       extensions.json
+³       launch.json
+³       tasks.json
+³       
+ÃÄÄÄCakeBuild
+³   ³   CakeBuild.csproj
+³   ³   Program.cs
+³   ³   
+³   ÃÄÄÄbin
+³   ³   ÀÄÄÄDebug
+³   ³       ³   Autofac.dll
+³   ³       ³   Cake.Cli.dll
+³   ³       ³   Cake.Common.dll
+³   ³       ³   Cake.Core.dll
+³   ³       ³   Cake.DotNetTool.Module.dll
+³   ³       ³   Cake.Frosting.dll
+³   ³       ³   Cake.Json.dll
+³   ³       ³   Cake.NuGet.dll
+³   ³       ³   CakeBuild.deps.json
+³   ³       ³   CakeBuild.dll
+³   ³       ³   CakeBuild.exe
+³   ³       ³   CakeBuild.pdb
+³   ³       ³   CakeBuild.runtimeconfig.json
+³   ³       ³   Microsoft.Extensions.DependencyInjection.Abstractions.dll
+³   ³       ³   Microsoft.Extensions.DependencyInjection.dll
+³   ³       ³   Microsoft.Extensions.Logging.Abstractions.dll
+³   ³       ³   Microsoft.IdentityModel.Abstractions.dll
+³   ³       ³   Microsoft.IdentityModel.JsonWebTokens.dll
+³   ³       ³   Microsoft.IdentityModel.Logging.dll
+³   ³       ³   Microsoft.IdentityModel.Tokens.dll
+³   ³       ³   Newtonsoft.Json.dll
+³   ³       ³   NuGet.Common.dll
+³   ³       ³   NuGet.Configuration.dll
+³   ³       ³   NuGet.Credentials.dll
+³   ³       ³   NuGet.Frameworks.dll
+³   ³       ³   NuGet.Packaging.dll
+³   ³       ³   NuGet.Protocol.dll
+³   ³       ³   NuGet.Resolver.dll
+³   ³       ³   NuGet.Versioning.dll
+³   ³       ³   Spectre.Console.Cli.dll
+³   ³       ³   Spectre.Console.dll
+³   ³       ³   System.Security.Cryptography.Pkcs.dll
+³   ³       ³   System.Security.Cryptography.ProtectedData.dll
+³   ³       ³   VintagestoryAPI.dll
+³   ³       ³   VintagestoryAPI.pdb
+³   ³       ³   VintagestoryAPI.xml
+³   ³       ³   
+³   ³       ÃÄÄÄde
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄes
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄfr
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄit
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄja
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄko
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄpt
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄru
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÃÄÄÄruntimes
+³   ³       ³   ÀÄÄÄwin
+³   ³       ³       ÀÄÄÄlib
+³   ³       ³           ÀÄÄÄnet10.0
+³   ³       ³                   System.Security.Cryptography.Pkcs.dll
+³   ³       ³                   
+³   ³       ÃÄÄÄsv
+³   ³       ³       Spectre.Console.Cli.resources.dll
+³   ³       ³       
+³   ³       ÀÄÄÄzh-Hans
+³   ³               Spectre.Console.Cli.resources.dll
+³   ³               
+³   ÀÄÄÄobj
+³       ³   CakeBuild.csproj.nuget.dgspec.json
+³       ³   CakeBuild.csproj.nuget.g.props
+³       ³   CakeBuild.csproj.nuget.g.targets
+³       ³   project.assets.json
+³       ³   project.nuget.cache
+³       ³   
+³       ÀÄÄÄDebug
+³           ³   .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
+³           ³   apphost.exe
+³           ³   CakeBuild.AssemblyInfo.cs
+³           ³   CakeBuild.AssemblyInfoInputs.cache
+³           ³   CakeBuild.assets.cache
+³           ³   CakeBuild.csproj.AssemblyReference.cache
+³           ³   CakeBuild.csproj.CoreCompileInputs.cache
+³           ³   CakeBuild.csproj.FileListAbsolute.txt
+³           ³   CakeBuild.csproj.Up2Date
+³           ³   CakeBuild.dll
+³           ³   CakeBuild.GeneratedMSBuildEditorConfig.editorconfig
+³           ³   CakeBuild.genruntimeconfig.cache
+³           ³   CakeBuild.pdb
+³           ³   
+³           ÃÄÄÄref
+³           ³       CakeBuild.dll
+³           ³       
+³           ÀÄÄÄrefint
+³                   CakeBuild.dll
+³                   
+ÀÄÄÄsrc
+    ³   FingerprintSystem.cs
+    ³   fingerprints_vintagestory.csproj
+    ³   InspectHud.cs
+    ³   ItemMagnifyingGlass.cs
+    ³   MagnifierGuard.cs
+    ³   modicon.png
+    ³   modinfo.json
+    ³   
+    ÃÄÄÄassets
+    ³   ÀÄÄÄfingerprints
+    ³       ÃÄÄÄitemtypes
+    ³       ³       magnifyingglass.json
+    ³       ³       
+    ³       ÃÄÄÄlang
+    ³       ³       en.json
+    ³       ³       ru.json
+    ³       ³       
+    ³       ÃÄÄÄpatches
+    ³       ³       crate.json
+    ³       ³       
+    ³       ÃÄÄÄrecipes
+    ³       ³   ÀÄÄÄgrid
+    ³       ³           magnifyingglass.json
+    ³       ³           
+    ³       ÃÄÄÄshapes
+    ³       ³   ÀÄÄÄitem
+    ³       ³           magnifyingglass.json
+    ³       ³           
+    ³       ÀÄÄÄtextures
+    ³           ÀÄÄÄitem
+    ³               ÀÄÄÄmagnifier
+    ³                       brass.png
+    ³                       glass.png
+    ³                       
+    ÃÄÄÄbin
+    ³   ÀÄÄÄDebug
+    ³       ÀÄÄÄMods
+    ³           ÀÄÄÄmod
+    ³               ³   fingerprints_1.3.0_compiled.zip
+    ³               ³   fingerprints_vintagestory.deps.json
+    ³               ³   fingerprints_vintagestory.dll
+    ³               ³   fingerprints_vintagestory.pdb
+    ³               ³   modicon.png
+    ³               ³   modinfo.json
+    ³               ³   
+    ³               ÀÄÄÄassets
+    ³                   ÀÄÄÄfingerprints
+    ³                       ÃÄÄÄitemtypes
+    ³                       ³       magnifyingglass.json
+    ³                       ³       
+    ³                       ÃÄÄÄlang
+    ³                       ³       en.json
+    ³                       ³       ru.json
+    ³                       ³       
+    ³                       ÃÄÄÄpatches
+    ³                       ³       crate.json
+    ³                       ³       
+    ³                       ÃÄÄÄrecipes
+    ³                       ³   ÀÄÄÄgrid
+    ³                       ³           magnifyingglass.json
+    ³                       ³           
+    ³                       ÃÄÄÄshapes
+    ³                       ³   ÀÄÄÄitem
+    ³                       ³           magnifyingglass.json
+    ³                       ³           
+    ³                       ÀÄÄÄtextures
+    ³                           ÀÄÄÄitem
+    ³                               ÀÄÄÄmagnifier
+    ³                                       brass.png
+    ³                                       glass.png
+    ³                                       
+    ÃÄÄÄobj
+    ³   ³   fingerprints_vintagestory.csproj.nuget.dgspec.json
+    ³   ³   fingerprints_vintagestory.csproj.nuget.g.props
+    ³   ³   fingerprints_vintagestory.csproj.nuget.g.targets
+    ³   ³   project.assets.json
+    ³   ³   project.nuget.cache
+    ³   ³   
+    ³   ÀÄÄÄDebug
+    ³       ³   .NETCoreApp,Version=v10.0.AssemblyAttributes.cs
+    ³       ³   fingerpr.B53A40BA.Up2Date
+    ³       ³   fingerprints_vintagestory.AssemblyInfo.cs
+    ³       ³   fingerprints_vintagestory.AssemblyInfoInputs.cache
+    ³       ³   fingerprints_vintagestory.assets.cache
+    ³       ³   fingerprints_vintagestory.csproj.AssemblyReference.cache
+    ³       ³   fingerprints_vintagestory.csproj.BuildWithSkipAnalyzers
+    ³       ³   fingerprints_vintagestory.csproj.CoreCompileInputs.cache
+    ³       ³   fingerprints_vintagestory.csproj.FileListAbsolute.txt
+    ³       ³   fingerprints_vintagestory.dll
+    ³       ³   fingerprints_vintagestory.GeneratedMSBuildEditorConfig.editorconfig
+    ³       ³   fingerprints_vintagestory.pdb
+    ³       ³   
+    ³       ÃÄÄÄref
+    ³       ³       fingerprints_vintagestory.dll
+    ³       ³       
+    ³       ÀÄÄÄrefint
+    ³               fingerprints_vintagestory.dll
+    ³               
+    ÀÄÄÄProperties
+            launchSettings.json
+            

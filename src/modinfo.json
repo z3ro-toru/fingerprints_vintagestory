@@ -1,0 +1,15 @@
+{
+  "type": "code",
+  "modid": "fingerprints",
+  "name": "Fingerprints",
+  "version": "1.3.0",
+  "authors": ["bob"],
+  "description": "Players leave fingerprints on chests and crates they open. Broken containers drop the prints onto the block below. Study them with a magnifying glass.",
+  "side": "Universal",
+  "requiredOnClient": true,
+  "requiredOnServer": true,
+  "dependencies": {
+    "game": "1.22.0",
+    "survival": ""
+  }
+}

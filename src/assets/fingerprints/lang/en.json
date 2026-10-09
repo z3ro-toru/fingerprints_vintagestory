@@ -1,0 +1,23 @@
+{
+	"item-magnifyingglass": "Magnifying glass",
+	"itemdesc-magnifyingglass": "Reveals fingerprints left on chests, crates and the blocks beneath them.",
+	"handbook-title": "Fingerprints",
+	"handbook-text": "Anyone who opens a chest or crate leaves fingerprints on it. If the container is broken, the prints stay on the block it stood on.<br><br>To study a block, hold <hk>rightmouse</hk> on it with the magnifying glass in hand. While you hold the glass, chests and crates won't open, so you don't leave your own prints. Fresh prints are fully readable, old ones get smudged and eventually fade away.",
+	"heldhelp-inspect": "Study fingerprints",
+	"inspect-none": "You carefully study the {0} through the magnifying glass but find no fingerprints.",
+	"inspect-header": "You study the {0} through the magnifying glass. Fingerprints found: {1}",
+	"print-line": "• {0}: {1} ({2})",
+	"print-touches": "[touches: {0}]",
+	"print-fallen": "— left from: {0}",
+	"unknown-container": "a broken container",
+	"smudged": "smudged print, looks like \"{0}\"",
+	"age-justnow": "just now",
+	"age-hours": "~{0} h ago",
+	"age-days": "~{0} days ago",
+	"fresh-1": "very fresh",
+	"fresh-2": "fresh",
+	"fresh-3": "old",
+	"fresh-4": "nearly faded",
+	"hud-inspecting": "Studying fingerprints…",
+	"stats": "Fingerprints — statistics:\n• Prints: {0} on {1} blocks\n• Distinct players: {2}\n• Fallen from broken containers: {3}\n• Total touches: {4}\n• Size in savegame: {5} (~{6} bytes per print)\n• Oldest: {7} in-game days ago\n• Lifetime: {8} in-game days, max {9} per block"
+}

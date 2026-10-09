@@ -1,0 +1,9 @@
+[
+ {
+  "op": "replace",
+  "path": "/class",
+  "value": "fingerprints.BlockCrate",
+  "file": "game:blocktypes/wood/woodtyped/crate.json",
+  "side": "Server"
+ }
+]

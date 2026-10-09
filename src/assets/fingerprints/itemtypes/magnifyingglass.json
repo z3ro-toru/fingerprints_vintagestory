@@ -1,0 +1,39 @@
+{
+	code: "magnifyingglass",
+	class: "fingerprints.ItemMagnifyingGlass",
+	maxstacksize: 1,
+	shape: { base: "fingerprints:item/magnifyingglass" },
+	creativeinventory: { "general": ["*"], "items": ["*"], "tools": ["*"] },
+	materialDensity: 600,
+	attributes: {
+		handbook: {
+			include: true,
+			extraSections: [
+				{ title: "fingerprints:handbook-title", text: "fingerprints:handbook-text" }
+			]
+		}
+	},
+	guiTransform: {
+		translation: { x: 0, y: 0, z: 0 },
+		rotation: { x: -26, y: -27, z: 35 },
+		origin: { x: 0.5, y: 0.5, z: 0.5 },
+		scale: 2.6
+	},
+	fpHandTransform: {
+		translation: { x: 0, y: 0.1, z: 0 },
+		rotation: { x: 0, y: 70, z: 0 },
+		origin: { x: 0.5, y: 0.2, z: 0.5 },
+		scale: 2
+	},
+	tpHandTransform: {
+		translation: { x: -0.9, y: -0.6, z: -0.55 },
+		rotation: { x: 1, y: 0, z: -40 },
+		scale: 0.76
+	},
+	groundTransform: {
+		translation: { x: 0, y: 0, z: 0 },
+		rotation: { x: 90, y: 0, z: 0 },
+		origin: { x: 0.5, y: 0.5, z: 0.53 },
+		scale: 3.2
+	}
+}
