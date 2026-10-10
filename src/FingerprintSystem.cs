@@ -15,15 +15,15 @@ namespace Fingerprints
         public int Y;
         public int Z;
         public int Dim;
-        public string PlayerUid;
-        public string PlayerName;
+        public string PlayerUid = "";
+        public string PlayerName = "";
         /// <summary>In-game day (Calendar.TotalDays) of the last touch.</summary>
         public double LastTouchDays;
         public int Touches;
         /// <summary>True when the print fell onto this block from a broken container above.</summary>
         public bool Transferred;
         /// <summary>Block code of the container the print originally came from (for transferred prints).</summary>
-        public string SourceBlockCode;
+        public string? SourceBlockCode;
     }
 
     public class FingerprintsConfig
@@ -31,9 +31,9 @@ namespace Fingerprints
         /// <summary>Block entity class names (C# type names, base classes count) that receive prints when opened.</summary>
         public string[] TrackedBlockEntityClasses = new[]
         {
-            "BlockEntityGenericTypedContainer", // chests, trunks, labeled chests, storage vessels
+            "BlockEntityGenericTypedContainer",
             "BlockEntityGenericContainer",
-            "BlockEntityCrate"                  // crates
+            "BlockEntityCrate"
         };
         /// <summary>After this many in-game days a print becomes smudged (only the first letter is readable).</summary>
         public double SmudgeAfterDays = 7;
@@ -56,12 +56,12 @@ namespace Fingerprints
         public const string SaveKey = "fingerprints-data";
         public const string ConfigFile = "fingerprints.json";
 
-        public static FingerprintsConfig Config = new FingerprintsConfig();
+        public static FingerprintsConfig Config { get; private set; } = new FingerprintsConfig();
 
-        ICoreServerAPI sapi;
-        readonly Dictionary<string, long> lastTouchMs = new Dictionary<string, long>();
-        readonly Dictionary<string, List<FingerprintRecord>> prints = new Dictionary<string, List<FingerprintRecord>>();
-        HashSet<string> trackedClasses = new HashSet<string>();
+        ICoreServerAPI sapi = null!;
+        readonly Dictionary<string, long> lastTouchMs = new();
+        readonly Dictionary<string, List<FingerprintRecord>> prints = new();
+        HashSet<string> trackedClasses = new();
 
         public override void Start(ICoreAPI api)
         {
@@ -81,7 +81,7 @@ namespace Fingerprints
                 api.Logger.Error("[fingerprints] Could not read config, using defaults: {0}", e.Message);
                 Config = new FingerprintsConfig();
             }
-            trackedClasses = new HashSet<string>(Config.TrackedBlockEntityClasses ?? new string[0]);
+            trackedClasses = new HashSet<string>(Config.TrackedBlockEntityClasses ?? Array.Empty<string>());
         }
 
         public override void AssetsFinalize(ICoreAPI api)
@@ -94,7 +94,7 @@ namespace Fingerprints
             {
                 if (block == null || block.Code == null || block.Id == 0) continue;
                 if (string.IsNullOrEmpty(block.EntityClass)) continue;
-                Type t = api.ClassRegistry.GetBlockEntity(block.EntityClass);
+                Type? t = api.ClassRegistry.GetBlockEntity(block.EntityClass);
                 if (t == null || !IsTracked(t)) continue;
 
                 bool has = false;
@@ -134,7 +134,7 @@ namespace Fingerprints
             prints.Clear();
             try
             {
-                byte[] data = sapi.WorldManager.SaveGame.GetData(SaveKey);
+                byte[]? data = sapi.WorldManager.SaveGame.GetData(SaveKey);
                 if (data == null) return;
                 var list = JsonUtil.FromBytes<List<FingerprintRecord>>(data);
                 if (list == null) return;
@@ -162,7 +162,7 @@ namespace Fingerprints
             if (byPlayer == null || blockSel?.Position == null) return;
 
             BlockPos pos = blockSel.Position;
-            BlockEntity be = sapi.World.BlockAccessor.GetBlockEntity(pos);
+            BlockEntity? be = sapi.World.BlockAccessor.GetBlockEntity(pos);
             if (be == null || !IsTracked(be.GetType())) return;
 
             AddPrint(pos, byPlayer, false, null);
@@ -174,16 +174,19 @@ namespace Fingerprints
             BlockPos pos = blockSel.Position;
             string key = Key(pos.X, pos.Y, pos.Z, pos.dimension);
             if (!prints.TryGetValue(key, out var list)) return;
-            prints.Remove(key);
 
-            Block oldBlock = sapi.World.GetBlock(oldblockId);
-            if (oldBlock == null) return;
+            Block? oldBlock = sapi.World.GetBlock(oldblockId);
 
-            if (BlockHasTrackedEntity(oldBlock))
+            if (oldBlock != null && BlockHasTrackedEntity(oldBlock))
             {
-                // A container was broken: all its prints fall onto the block it stood on
-                BlockPos below = FindSurfaceBelow(pos);
-                if (below != null) MovePrints(list, below, oldBlock.Code?.ToString());
+                // A container was broken: all its prints fall onto the block it stood on.
+                // Do NOT remove the entry until the move actually succeeds, otherwise prints are lost.
+                BlockPos? below = FindSurfaceBelow(pos);
+                if (below != null)
+                {
+                    prints.Remove(key);
+                    MovePrints(list, below, oldBlock.Code?.ToString());
+                }
                 return;
             }
 
@@ -193,11 +196,15 @@ namespace Fingerprints
             foreach (var rec in list) if (rec.Transferred) survivors.Add(rec);
             if (survivors.Count == 0) return;
 
-            BlockPos target = FindNearbyBlock(pos, oldBlock);
-            if (target != null) MovePrints(survivors, target, null);
+            if (oldBlock == null) return;
+            BlockPos? target = FindNearbyBlock(pos, oldBlock);
+            if (target == null) return;
+
+            prints.Remove(key);
+            MovePrints(survivors, target, null);
         }
 
-        void MovePrints(List<FingerprintRecord> moving, BlockPos target, string sourceCodeIfNew)
+        void MovePrints(List<FingerprintRecord> moving, BlockPos target, string? sourceCodeIfNew)
         {
             var targetList = GetOrCreate(target.X, target.Y, target.Z, target.dimension);
             foreach (var rec in moving)
@@ -216,7 +223,8 @@ namespace Fingerprints
                     {
                         existing.LastTouchDays = rec.LastTouchDays;
                         existing.Transferred = rec.Transferred;
-                        existing.SourceBlockCode = rec.SourceBlockCode;
+                        // Не обнуляем уже известный источник
+                        existing.SourceBlockCode = rec.SourceBlockCode ?? existing.SourceBlockCode;
                     }
                 }
                 else targetList.Add(rec);
@@ -229,10 +237,10 @@ namespace Fingerprints
         /// Preference: exactly the same block, then the same kind of block (e.g. any soil), then anything solid.
         /// Closer blocks are preferred within each group.
         /// </summary>
-        BlockPos FindNearbyBlock(BlockPos pos, Block oldBlock)
+        BlockPos? FindNearbyBlock(BlockPos pos, Block oldBlock)
         {
             int radius = Math.Max(1, Config.SpreadRadius);
-            string oldKind = oldBlock.FirstCodePart();
+            string? oldKind = oldBlock.FirstCodePart();
             var sameBlock = new List<BlockPos>();
             var sameKind = new List<BlockPos>();
             var any = new List<BlockPos>();
@@ -240,20 +248,20 @@ namespace Fingerprints
 
             IBlockAccessor ba = sapi.World.BlockAccessor;
             for (int dx = -radius; dx <= radius; dx++)
-            for (int dy = -radius; dy <= radius; dy++)
-            for (int dz = -radius; dz <= radius; dz++)
-            {
-                if (dx == 0 && dy == 0 && dz == 0) continue;
-                var p = new BlockPos(pos.X + dx, pos.Y + dy, pos.Z + dz, pos.dimension);
-                if (p.Y < 0) continue;
-                Block b = ba.GetBlock(p);
-                if (b == null || b.Id == 0 || b.Replaceable >= 6000 || b.IsLiquid()) continue;
+                for (int dy = -radius; dy <= radius; dy++)
+                    for (int dz = -radius; dz <= radius; dz++)
+                    {
+                        if (dx == 0 && dy == 0 && dz == 0) continue;
+                        var p = new BlockPos(pos.X + dx, pos.Y + dy, pos.Z + dz, pos.dimension);
+                        if (p.Y < 0) continue;
+                        Block b = ba.GetBlock(p);
+                        if (b == null || b.Id == 0 || b.Replaceable >= 6000 || b.IsLiquid()) continue;
 
-                int dist = Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz);
-                if (b.Id == oldBlock.Id) AddClosest(sameBlock, p, dist, ref bestSame);
-                else if (oldKind != null && b.FirstCodePart() == oldKind) AddClosest(sameKind, p, dist, ref bestKind);
-                else AddClosest(any, p, dist, ref bestAny);
-            }
+                        int dist = Math.Abs(dx) + Math.Abs(dy) + Math.Abs(dz);
+                        if (b.Id == oldBlock.Id) AddClosest(sameBlock, p, dist, ref bestSame);
+                        else if (oldKind != null && b.FirstCodePart() == oldKind) AddClosest(sameKind, p, dist, ref bestKind);
+                        else AddClosest(any, p, dist, ref bestAny);
+                    }
 
             List<BlockPos> pick = sameBlock.Count > 0 ? sameBlock : sameKind.Count > 0 ? sameKind : any;
             if (pick.Count == 0) return null;
@@ -317,7 +325,7 @@ namespace Fingerprints
 
         // ---------------------------------------------------------------- helpers
 
-        void AddPrint(BlockPos pos, IServerPlayer player, bool transferred, string sourceCode)
+        void AddPrint(BlockPos pos, IServerPlayer player, bool transferred, string? sourceCode)
         {
             var list = GetOrCreate(pos.X, pos.Y, pos.Z, pos.dimension);
             var rec = FindByPlayer(list, player.PlayerUID);
@@ -325,7 +333,10 @@ namespace Fingerprints
             {
                 rec = new FingerprintRecord
                 {
-                    X = pos.X, Y = pos.Y, Z = pos.Z, Dim = pos.dimension,
+                    X = pos.X,
+                    Y = pos.Y,
+                    Z = pos.Z,
+                    Dim = pos.dimension,
                     PlayerUid = player.PlayerUID,
                 };
                 list.Add(rec);
@@ -356,22 +367,22 @@ namespace Fingerprints
 
         void PurgeExpired()
         {
-            if (Config.LifetimeDays <= 0 || sapi == null) return;
+            if (Config.LifetimeDays <= 0) return;
             double now = NowDays;
-            List<string> empty = null;
+            List<string>? empty = null;
             foreach (var kv in prints)
             {
                 kv.Value.RemoveAll(r => now - r.LastTouchDays > Config.LifetimeDays);
                 if (kv.Value.Count == 0)
                 {
-                    if (empty == null) empty = new List<string>();
+                    empty ??= new List<string>();
                     empty.Add(kv.Key);
                 }
             }
             if (empty != null) foreach (var k in empty) prints.Remove(k);
         }
 
-        BlockPos FindSurfaceBelow(BlockPos pos)
+        BlockPos? FindSurfaceBelow(BlockPos pos)
         {
             BlockPos cur = pos.Copy();
             int maxDist = Math.Max(1, Config.MaxDropDistance);
@@ -380,7 +391,8 @@ namespace Fingerprints
                 cur.Y--;
                 if (cur.Y < 0) return null;
                 Block b = sapi.World.BlockAccessor.GetBlock(cur);
-                if (b != null && b.Id != 0 && b.Replaceable < 6000) return cur.Copy();
+                // Не требуем Replaceable < 6000: иначе трава, снег и листва не считаются "полом".
+                if (b != null && b.Id != 0 && !b.IsLiquid()) return cur.Copy();
             }
             return null;
         }
@@ -388,11 +400,11 @@ namespace Fingerprints
         bool BlockHasTrackedEntity(Block block)
         {
             if (string.IsNullOrEmpty(block.EntityClass)) return false;
-            Type t = sapi.ClassRegistry.GetBlockEntity(block.EntityClass);
+            Type? t = sapi.ClassRegistry.GetBlockEntity(block.EntityClass);
             return t != null && IsTracked(t);
         }
 
-        bool IsTracked(Type t)
+        bool IsTracked(Type? t)
         {
             for (; t != null && t != typeof(object); t = t.BaseType)
             {
@@ -412,7 +424,7 @@ namespace Fingerprints
             return list;
         }
 
-        static FingerprintRecord FindByPlayer(List<FingerprintRecord> list, string uid)
+        static FingerprintRecord? FindByPlayer(List<FingerprintRecord> list, string uid)
         {
             foreach (var r in list) if (r.PlayerUid == uid) return r;
             return null;

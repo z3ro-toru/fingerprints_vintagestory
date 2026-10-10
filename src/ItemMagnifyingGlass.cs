@@ -16,42 +16,37 @@ namespace Fingerprints
     /// </summary>
     public class ItemMagnifyingGlass : Item
     {
-        WorldInteraction[] interactions;
+        private WorldInteraction[] interactions = Array.Empty<WorldInteraction>();
 
         public override void OnLoaded(ICoreAPI api)
         {
             base.OnLoaded(api);
-            // With sneak held, our interaction goes before any block's own
             HeldPriorityInteract = true;
 
-            interactions = new[]
-            {
+            interactions =
+            [
                 new WorldInteraction
                 {
                     ActionLangCode = "fingerprints:heldhelp-inspect",
                     MouseButton = EnumMouseButton.Right,
                 }
-            };
+            ];
         }
 
-        FingerprintsClientSystem ClientFx(EntityAgent byEntity)
+        private FingerprintsClientSystem? ClientFx(EntityAgent byEntity)
         {
             if (api.Side != EnumAppSide.Client) return null;
-            var capi = api as ICoreClientAPI;
-            if (capi?.World?.Player?.Entity == null || byEntity != capi.World.Player.Entity) return null;
-            return api.ModLoader.GetModSystem<FingerprintsClientSystem>();
+            if (api is not ICoreClientAPI capi) return null;
+            if (capi.World?.Player?.Entity == null || byEntity != capi.World.Player.Entity) return null;
+            return capi.ModLoader.GetModSystem<FingerprintsClientSystem>();
         }
 
         /// <summary>
-        /// In creative mode the game re-triggers held interactions very quickly (vanilla tools such as the
-        /// crowbar finish their action after 0.1 s there), so the study is nearly instant in creative.
+        /// Study duration. Same in every game mode — otherwise in creative the highlight
+        /// flashes for a fraction of a second.
         /// </summary>
-        static float Duration(EntityAgent byEntity)
-        {
-            var plr = (byEntity as EntityPlayer)?.Player;
-            if (plr?.WorldData?.CurrentGameMode == EnumGameMode.Creative) return 0.1f;
-            return Math.Max(0.1f, FingerprintSystem.Config.InspectSeconds);
-        }
+        private static float Duration(EntityAgent byEntity)
+            => Math.Max(0.1f, FingerprintSystem.Config.InspectSeconds);
 
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
@@ -61,7 +56,6 @@ namespace Fingerprints
                 return;
             }
 
-            // Always claim the interaction (also for repeated, non-first events), otherwise the game aborts it
             handling = EnumHandHandling.PreventDefault;
             if (firstEvent)
             {
@@ -72,7 +66,7 @@ namespace Fingerprints
 
         public override bool OnHeldInteractStep(float secondsUsed, ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel)
         {
-            var fx = ClientFx(byEntity);
+            FingerprintsClientSystem? fx = ClientFx(byEntity);
             if (blockSel == null || (fx != null && !fx.IsTarget(blockSel.Position)))
             {
                 fx?.End(false);
@@ -100,24 +94,24 @@ namespace Fingerprints
             ClientFx(byEntity)?.End(completed);
 
             if (!completed || api.Side != EnumAppSide.Server) return;
+            if (blockSel == null) return;
 
-            var player = (byEntity as EntityPlayer)?.Player as IServerPlayer;
-            if (player == null) return;
+            if (byEntity is not EntityPlayer ep || ep.Player is not IServerPlayer player) return;
 
-            var system = api.ModLoader.GetModSystem<FingerprintSystem>();
+            FingerprintSystem system = api.ModLoader.GetModSystem<FingerprintSystem>();
             if (system == null) return;
 
             Report(player, system, blockSel.Position);
         }
 
-        void Report(IServerPlayer player, FingerprintSystem system, BlockPos pos)
+        private void Report(IServerPlayer player, FingerprintSystem system, BlockPos pos)
         {
             string lang = player.LanguageCode ?? "en";
-            Block block = api.World.BlockAccessor.GetBlock(pos);
+            Block? block = api.World.BlockAccessor.GetBlock(pos);
             string blockName = block?.GetPlacedBlockName(api.World, pos) ?? "?";
 
             List<FingerprintRecord> list = system.GetPrints(pos);
-            var sb = new StringBuilder();
+            StringBuilder sb = new();
 
             if (list.Count == 0)
             {
@@ -127,7 +121,7 @@ namespace Fingerprints
             {
                 sb.Append(Lang.GetL(lang, "fingerprints:inspect-header", blockName, list.Count));
                 double now = system.NowDays;
-                foreach (var rec in list)
+                foreach (FingerprintRecord rec in list)
                 {
                     double ageDays = Math.Max(0, now - rec.LastTouchDays);
                     bool smudged = FingerprintSystem.Config.SmudgeAfterDays > 0 && ageDays > FingerprintSystem.Config.SmudgeAfterDays;
@@ -142,28 +136,30 @@ namespace Fingerprints
                     {
                         line += " " + Lang.GetL(lang, "fingerprints:print-fallen", SourceName(lang, rec.SourceBlockCode));
                     }
-                    sb.Append("\n").Append(line);
+                    sb.Append('\n').Append(line);
                 }
             }
 
             player.SendMessage(GlobalConstants.GeneralChatGroup, sb.ToString(), EnumChatType.Notification);
         }
 
-        string SourceName(string lang, string code)
+        private string SourceName(string lang, string? code)
         {
             if (string.IsNullOrEmpty(code)) return Lang.GetL(lang, "fingerprints:unknown-container");
-            Block b = api.World.GetBlock(new AssetLocation(code));
-            if (b == null || b.Code == null) return code;
-            return Lang.GetMatchingL(lang, b.Code.Domain + AssetLocation.LocationSeparator + "block-" + b.Code.Path);
+            AssetLocation loc = new(code);
+            Block? b = api.World.GetBlock(loc);
+            if (b?.Code == null) return code;
+            // Lang keys for blocks live without the domain prefix, e.g. "block-chest".
+            return Lang.GetMatchingL(lang, "block-" + b.Code.Path);
         }
 
-        static string Obscure(string name)
+        private static string Obscure(string? name)
         {
             if (string.IsNullOrEmpty(name)) return "?";
-            return name.Substring(0, 1) + new string('*', Math.Max(2, name.Length - 1));
+            return name[0] + new string('*', Math.Max(2, name.Length - 1));
         }
 
-        static string FormatAge(string lang, double days)
+        private static string FormatAge(string lang, double days)
         {
             double hours = days * 24;
             if (hours < 1) return Lang.GetL(lang, "fingerprints:age-justnow");
@@ -171,7 +167,7 @@ namespace Fingerprints
             return Lang.GetL(lang, "fingerprints:age-days", (int)Math.Round(days));
         }
 
-        static string FreshnessWord(string lang, double days)
+        private static string FreshnessWord(string lang, double days)
         {
             if (days < 1) return Lang.GetL(lang, "fingerprints:fresh-1");
             if (days < 3) return Lang.GetL(lang, "fingerprints:fresh-2");

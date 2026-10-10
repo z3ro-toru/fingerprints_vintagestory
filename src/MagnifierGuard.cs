@@ -5,7 +5,7 @@ namespace Fingerprints
 {
     public static class MagnifierUtil
     {
-        public static bool HoldsMagnifier(IPlayer player)
+        public static bool HoldsMagnifier(IPlayer? player)
         {
             return player?.InventoryManager?.ActiveHotbarSlot?.Itemstack?.Collectible is ItemMagnifyingGlass;
         }

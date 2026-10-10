@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
@@ -11,7 +10,7 @@ namespace Fingerprints
     /// <summary>Small progress bar under the crosshair while studying a block.</summary>
     public class HudInspectProgress : HudElement
     {
-        GuiElementStatbar bar;
+        GuiElementStatbar bar = null!;
 
         public HudInspectProgress(ICoreClientAPI capi) : base(capi)
         {
@@ -49,10 +48,9 @@ namespace Fingerprints
             bar?.SetValues(GameMath.Clamp(progress01, 0, 1) * 100f, 0, 100);
         }
 
-        public override string ToggleKeyCombinationCode => null;
+        public override string ToggleKeyCombinationCode => null!;
         public override bool Focusable => false;
         public override bool ShouldReceiveKeyboardEvents() => false;
-        public override void OnMouseDown(MouseEvent args) { }
     }
 
     /// <summary>Client-side visuals of the magnifying glass: progress bar, block highlight and dust particles.</summary>
@@ -60,12 +58,12 @@ namespace Fingerprints
     {
         public const int HighlightSlot = 7311;
 
-        ICoreClientAPI capi;
-        HudInspectProgress hud;
-        BlockPos activePos;
+        ICoreClientAPI capi = null!;
+        HudInspectProgress? hud;
+        BlockPos? activePos;
         long lastParticleMs;
 
-        static readonly SimpleParticleProperties dust = new SimpleParticleProperties(
+        static readonly SimpleParticleProperties dustTemplate = new SimpleParticleProperties(
             1, 2, ColorUtil.ToRgba(180, 235, 205, 120),
             new Vec3d(), new Vec3d(),
             new Vec3f(-0.08f, 0.02f, -0.08f), new Vec3f(0.08f, 0.12f, 0.08f),
@@ -76,22 +74,22 @@ namespace Fingerprints
         public override void StartClientSide(ICoreClientAPI api)
         {
             capi = api;
-            dust.SelfPropelled = true;
-            dust.WithTerrainCollision = false;
-            dust.OpacityEvolve = EvolvingNatFloat.create(EnumTransformFunction.LINEAR, -150);
+            dustTemplate.SelfPropelled = true;
+            dustTemplate.WithTerrainCollision = false;
+            dustTemplate.OpacityEvolve = EvolvingNatFloat.create(EnumTransformFunction.LINEAR, -150);
         }
 
         public void Begin(BlockPos pos)
         {
             activePos = pos.Copy();
-            if (hud == null) hud = new HudInspectProgress(capi);
+            hud ??= new HudInspectProgress(capi);
             hud.SetProgress(0);
             hud.TryOpen();
 
             SetHighlight(new List<BlockPos> { activePos }, new List<int> { ColorUtil.ToRgba(70, 60, 190, 230) });
         }
 
-        public bool IsTarget(BlockPos pos) => activePos == null || activePos.Equals(pos);
+        public bool IsTarget(BlockPos pos) => activePos != null && activePos.Equals(pos);
 
         public void Progress(float progress01, BlockSelection blockSel)
         {
@@ -105,9 +103,11 @@ namespace Fingerprints
                 Vec3d hit = blockSel.HitPosition != null
                     ? blockSel.FullPosition
                     : new Vec3d(blockSel.Position.X + 0.5, blockSel.Position.InternalY + 0.5, blockSel.Position.Z + 0.5);
-                dust.MinPos.Set(hit.X - 0.15, hit.Y - 0.15, hit.Z - 0.15);
-                dust.AddPos.Set(0.3, 0.3, 0.3);
-                capi.World.SpawnParticles(dust);
+
+                var p = dustTemplate.Clone(capi.World);
+                p.MinPos.Set(hit.X - 0.15, hit.Y - 0.15, hit.Z - 0.15);
+                p.AddPos.Set(0.3, 0.3, 0.3);
+                capi.World.SpawnParticles(p);
             }
         }
 
@@ -123,38 +123,26 @@ namespace Fingerprints
             }
         }
 
-        // The in-game C# compiler does not reference System.Collections, so API methods that take
-        // a List<> parameter can't be called directly from source mods. Call it via reflection instead.
-        static MethodInfo highlightMethod;
-        static bool highlightLookupDone;
-
         void SetHighlight(List<BlockPos> blocks, List<int> colors)
         {
             try
             {
-                if (!highlightLookupDone)
-                {
-                    highlightLookupDone = true;
-                    foreach (MethodInfo m in typeof(IWorldAccessor).GetMethods())
-                    {
-                        if (m.Name == "HighlightBlocks" && m.GetParameters().Length == 7) { highlightMethod = m; break; }
-                    }
-                }
-                if (highlightMethod == null) return;
-                highlightMethod.Invoke(capi.World, new object[] {
+                // Держим подсветку с запасом; End() снимет её сразу после окончания изучения.
+                float seconds = Math.Max(5f, FingerprintSystem.Config.InspectSeconds + 2f);
+
+                capi.World.HighlightBlocks(
                     capi.World.Player, HighlightSlot, blocks, colors,
-                    EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Arbitrary, 1f
-                });
+                    EnumHighlightBlocksMode.Absolute, EnumHighlightShape.Arbitrary, seconds);
             }
             catch (Exception e)
             {
                 capi.Logger.Warning("[fingerprints] Block highlight failed: {0}", e.Message);
-                highlightMethod = null;
             }
         }
 
         public override void Dispose()
         {
+            hud?.TryClose();
             hud?.Dispose();
         }
     }
